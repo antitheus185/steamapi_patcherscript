@@ -32,7 +32,11 @@ if exist "%target%\steam_api64.dll" (
 	goto 64
 )
 
+
 :32
+
+:: Renames original steam_api.dll as part of my attempt to prevent a loop with the script.
+ren "%target%\steam_api.dll" steam_api_o.dll
 
 :: Force copies from the source folder to the target, that's what the /Y is for.
 copy /Y "%emudll32%" "%target%\steam_api.dll" 
@@ -45,18 +49,22 @@ if not exist "%target%\steam_api.dll" (
 	exit
 )
 
+if exist "%target%\steam_api64_o.dll" (
+	goto 64o
+)
 :: I've noted a possible issue with this particular part in the :64 section.
 if exist "%target%\steam_api64.dll" (
 	goto 64
 )
 
 :: If you don't have a steam_api64.dll in the directory, it'll end and be done.
-if not exist "%target%\steam_api64.dll
+if not exist "%target%\steam_api64.dll (
 	endlocal
 	exit
 )
 
 :64
+ren "%target%\steam_api64.dll" steam_api64_o.dll
 copy /Y "%emudll64%" "%target%\steam_api64.dll"
 
 :: This MAY cause issues with running the :32 sections, not sure yet.
@@ -69,6 +77,9 @@ if not exist "%target%\steam_api64.dll" (
 	exit
 )
 
+if exist "%target%\steam_api_o.dll" (
+	goto 32o
+)
 :: If you have a game that for one reason or another has both 32bit and 64bit api dlls,
 :: this MAY cause a looping issue where it'll keep detecting both files
 :: and sending it back through :32 and then back to :64, cycling non-stop.
@@ -81,3 +92,15 @@ if not exist "%target%\steam_api.dll" (
 	endlocal
 	exit
 )
+
+:32o
+echo "Warning: steam_api_o.dll found! File is possibly pre-patched."
+pause
+endlocal
+exit
+
+:64o
+echo "Warning: steam_api64_o.dll found! File is possibly pre-patched."
+pause
+endlocal
+exit
